@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Name - Interactive Portfolio</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: #0C0C0C;
+            color: #CCCCCC;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #terminal-wrapper {
+            width: 80vw;
+            height: 80vh;
+            border: 3px solid #CCCCCC;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(204, 204, 204, 0.5);
+            background-color: #0C0C0C;
+            position: relative;
+            overflow: hidden;
+        }
+        #title-bar {
+            height: 30px;
+            background: #333;
+            border-bottom: 2px solid #666;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: #CCC;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        #title-bar .control-buttons {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+        }
+        #title-bar .control-buttons div {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #F00;
+            display: inline-block;
+        }
+        #title-bar .control-buttons div:nth-child(2) {
+            background-color: #FF0;
+        }
+        #title-bar .control-buttons div:nth-child(3) {
+            background-color: #0F0;
+        }
+        #terminal {
+            width: 100%;
+            height: calc(100% - 30px);
+            background-color: #0C0C0C;
+            padding: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+        #terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+        #terminal::-webkit-scrollbar-track {
+            background: #0C0C0C;
+        }
+        #terminal::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        #terminal::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        #input-line {
+            display: flex;
+            align-items: center;
+        }
+        #prompt {
+            color: #0F0;
+            margin-right: 5px;
+        }
+        #user-input {
+            background: transparent;
+            border: none;
+            color: #CCCCCC;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            width: 100%;
+        }
+        .highlight {
+            color: #0F0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal-wrapper">
+        <div id="title-bar">
+            Interactive Portfolio Terminal
+            <div class="control-buttons">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+        <div id="terminal"></div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        const content = `Microsoft Windows [Version 10.0.22631.4169]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\\Users\\YourName>echo Welcome to my interactive portfolio!
+Welcome to my interactive portfolio!
+
+C:\\Users\\YourName>echo Type 'help' to see available commands.
+Type 'help' to see available commands.
+
+`;
+
+        const commands = {
+            help: `Available commands:
+  about       - Learn more about me
+  projects    - See my notable projects
+  contact     - Get my contact information
+  clear       - Clear the terminal screen
+  `,
+            about: `I am a passionate developer with expertise in web technologies. I love creating innovative solutions and continuously learning new skills to stay at the forefront of technology.`,
+            projects: `Here are some of my recent projects:
+1. Project A - Description of Project A
+2. Project B - Description of Project B
+
+For more details on each project, type 'project-a' or 'project-b'.`,
+            'project-a': `Project A:
+- Description: Detailed description of Project A
+- Technologies used: List of technologies
+- Key features: Notable features of Project A
+- Outcome: Results or impact of the project`,
+            'project-b': `Project B:
+- Description: Detailed description of Project B
+- Technologies used: List of technologies
+- Key features: Notable features of Project B
+- Outcome: Results or impact of the project`,
+            contact: `You can reach me at:
+Email: your.email@example.com
+LinkedIn: linkedin.com/in/yourprofile
+
+Feel free to get in touch for collaborations or opportunities!`,
+            clear: () => {
+                terminal.innerHTML = '';
+                return '';
+            }
+        };
+
+        function typeWriter(text, callback) {
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    terminal.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, 1);
+                    terminal.scrollTop = terminal.scrollHeight;
+                } else if (callback) {
+                    callback();
+                }
+            }
+            type();
+        }
+
+        function createInputLine() {
+            const inputLine = document.createElement('div');
+            inputLine.id = 'input-line';
+            
+            const prompt = document.createElement('span');
+            prompt.id = 'prompt';
+            prompt.textContent = 'C:\\Users\\YourName>';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'user-input';
+            
+            inputLine.appendChild(prompt);
+            inputLine.appendChild(input);
+            terminal.appendChild(inputLine);
+            
+            input.focus();
+            
+            input.addEventListener('keydown', handleInput);
+        }
+
+        function handleInput(e) {
+            if (e.key === 'Enter') {
+                const input = e.target;
+                const command = input.value.trim().toLowerCase();
+                
+                commandHistory.push(command);
+                historyIndex = commandHistory.length;
+                
+                terminal.removeChild(document.getElementById('input-line'));
+                
+                terminal.innerHTML += `C:\\Users\\YourName>${command}\n`;
+                
+                if (command in commands) {
+                    if (typeof commands[command] === 'function') {
+                        terminal.innerHTML += commands[command]();
+                    } else {
+                        terminal.innerHTML += commands[command];
+                    }
+                } else {
+                    terminal.innerHTML += `'${command}' is not recognized as an internal or external command, operable program or batch file.`;
+                }
+                
+                terminal.innerHTML += '\n\n';
+                createInputLine();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    e.target.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    e.target.value = commandHistory[historyIndex];
+                } else {
+                    historyIndex = commandHistory.length;
+                    e.target.value = '';
+                }
+            }
+        }
+
+        typeWriter(content, createInputLine);
+    </script>
+</body>
+</html>
